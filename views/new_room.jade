@@ -1,0 +1,30 @@
+extends layout
+
+block nav
+
+block content
+  h1 cha
+    span.circle-t &#x24E3;
+    | os
+
+  table#rooms
+    thead
+      tr
+        th Name
+    tbody
+      - for room in rooms
+       - console.log( room.name, room )
+       tr
+         td 
+          a(href='/rooms/'+room.name)= room.name
+
+
+  form(action="/rooms/new", method="post")
+    fieldset
+      legend New Room
+      div.clearfix
+        label(for="name") Name:
+        .input
+          input#name.xlarge(name="name", type="text")
+      .actions
+        input.btn.primary(type="submit", value="Create")

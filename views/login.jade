@@ -1,0 +1,22 @@
+extends layout
+
+block nav
+
+block content
+  h1 cha
+    span.circle-t &#x24E3;
+    | os
+    
+  form(action="/login", method="post")
+    fieldset
+      legend Login
+      div.clearfix
+        label(for="email") Email:
+        .input
+          input#email.xlarge(name="email", type="text")
+      div.clearfix
+        label(for="nickname") Nickname:
+        .input
+          input#nickname.xlarge(name="nickname", type="text")
+      .actions
+        input.btn.primary(type="submit", value="Login")

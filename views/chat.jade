@@ -1,0 +1,24 @@
+html
+  head#head
+    script(language="javascript")
+      window.chat = window['chat']||{};
+      window.chat.os = window.chat['os']||{};
+      window.chat.os.identity = {email:"#{ identity.email }", nickname:"#{identity.nickname}"};
+      window.chat.os.room = '#{room.name}';
+    style
+      body { font-family: Helvetica; background: #000; color: #fff; padding:0; overflow:hidden; width:100%; }
+      #logo { width: 10%; display: inline-block; padding: 0; text-align: center; }
+      .circle-t { font-size: .66em; padding: 0 .18em }
+      #message { border: 1px; padding: 5px; background-color: #333; width: 400px; color: #fff; width: 78%; }
+      .action { display: inline-block; width: 10%; text-align:left; padding:0; }
+      #send { margin-left: 10px;}
+      #responses { font-size: 14px;}
+    script(language="javascript",src="/scripts/chat.os.js")
+  body
+    span#logo cha
+      span.circle-t &#x24E3;
+      | os
+    input#message
+    div.action
+    div#responses
+

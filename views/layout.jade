@@ -1,0 +1,22 @@
+!!! 5
+html
+  head
+    link(rel='stylesheet',href='/css/bootstrap.min.css', type='text/css')
+    link(rel='stylesheet',href='/css/site.css', type='text/css')
+    title= locals.title || 'Nodebro.js'
+    block scripts
+  body
+    block nav
+      .topbar-wrapper
+        .topbar
+          .topbar-inner
+            .container
+              .brand nodebro.js
+              ul.secondary-nav
+                - if (locals.nickname)
+                  li
+                    a(href="/logout") logout
+
+    .container
+      block content
+

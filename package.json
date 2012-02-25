@@ -1,0 +1,14 @@
+{
+  "name" : "chat.os",
+  "version" : "0.0.1",
+  "dependencies" : {
+    "express" : "2.5",
+    "ws"      : "0",
+    "cookie-sessions" : "0",
+    "jade"    : "0.18",
+    "mocha"   : "0",
+    "mongodb" : "0",
+    "expect.js" : "0",
+    "cron" : "https://github.com/ncb000gt/node-cron/tarball/master"
+  }
+}

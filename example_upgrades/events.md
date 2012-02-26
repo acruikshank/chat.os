@@ -98,7 +98,7 @@ and can be used to style the event and change the icon), and _message_ is the te
   var lastAnimationTime;
   var animationFrame;
   var scrollVelocity = 0;
-  var mouseIsOut = true;
+   var mouseIsOut = true;
   var eventState = {};
   var animations = {};
   var lastScreenY = 0;
@@ -106,18 +106,18 @@ and can be used to style the event and change the icon), and _message_ is the te
 
   function el(id) { return document.getElementById(id); }
   function gen( name, clss, atts ) {
-    var el = document.createElement(name), out={};
+      var el = document.createElement(name), out={};
     if ( typeof clss == 'object' ) atts=clss, clss=null;
-    for (var att in atts) el.setAttribute(att,atts[att]);
-    if ( clss ) el.setAttribute('class', clss);
-    out.add = function(node) { return el.appendChild( node.el ? node.el() : node ), out; };
-    out.text = function(txt) { return el.appendChild( document.createTextNode(txt) ), out };
-    out.el = function() { return el; };
-    return out;
-  }
+      for (var att in atts) el.setAttribute(att,atts[att]);
+      if ( clss ) el.setAttribute('class', clss);
+      out.add = function(node) { return el.appendChild( node.el ? node.el() : node ), out; };
+      out.text = function(txt) { return el.appendChild( document.createTextNode(txt) ), out };
+      out.el = function() { return el; };
+     return out;
+   }
   function descendent( el, id ) { 
-    for (; el; el=el.parentElement) if ( el.id===id ) return true;
-    return false;
+      for (; el; el=el.parentElement) if ( el.id===id ) return true;
+      return false;
   }
 
   chat.os.event = function( time, type, text ) {
@@ -131,17 +131,17 @@ and can be used to style the event and change the icon), and _message_ is the te
     eventState[event.id] = { pop:1 };
     el('events').appendChild(event);
 
-    var data = event.getElementsByClassName('t')[0];
+     var data = event.getElementsByClassName('t')[0];
     for (var i=0; i<100 && data.offsetHeight > 46; i++ ) 
       data.style.width = (data.offsetWidth+5)+'px'; 
     
     popEvent( event, 1 );
     needsUpdate();
     setTimeout( function() { 
-      el(id).setAttribute('class',el(id).getAttribute('class').replace(' new','')); 
+         el(id).setAttribute('class',el(id).getAttribute('class').replace(' new','')); 
       popEvent( event, 0 );
       needsUpdate();
-    }, 5000 );
+      }, 5000 );
     if ( mouseIsOut ) clear()
   }
 
@@ -154,14 +154,14 @@ and can be used to style the event and change the icon), and _message_ is the te
     mouseIsOut = false;
     unscroll = null;
     var oSlope = 1/FADE_HEIGHT, mid = FADE_START + (window.innerHeight - FADE_START) / 2;
-    if ( e.screenY > mid )
-      scrollVelocity = -.2 * Math.min( 1, Math.max( 0, (e.screenY - window.innerHeight + FADE_HEIGHT) * oSlope ) );
-    else
-      scrollVelocity = .2 * Math.min( 1, Math.max( 0, (FADE_START + FADE_HEIGHT - e.screenY) * oSlope ) );
+      if ( e.screenY > mid )
+       scrollVelocity = -.2 * Math.min( 1, Math.max( 0, (e.screenY - window.innerHeight + FADE_HEIGHT) * oSlope ) );
+      else
+       scrollVelocity = .2 * Math.min( 1, Math.max( 0, (FADE_START + FADE_HEIGHT - e.screenY) * oSlope ) );
 
     if ( scrollVelocity != 0 ) needsUpdate();
 
-    var overIndex = Math.round(screenToEvents(e.screenY)/ITEM_HEIGHT);
+      var overIndex = Math.round(screenToEvents(e.screenY)/ITEM_HEIGHT);
     for (var i=0,event; event = el('events-'+i); i++) {
       p = [1,.3][Math.abs(i-overIndex)] || 0;
       if ( p != eventState['events-'+i].pop ) {
@@ -174,17 +174,17 @@ and can be used to style the event and change the icon), and _message_ is the te
   }
 
   function popEvent( event, p ) {
-    var icon = event.getElementsByClassName('icon')[0];
-    var time = event.getElementsByClassName('time')[0];
+     var icon = event.getElementsByClassName('icon')[0];
+     var time = event.getElementsByClassName('time')[0];
     var text = event.getElementsByClassName('text')[0];
     var s = 6 + Math.round(24 * p);
     var interpolations = [
       interpolate_pixels( icon.style, 'width', s ),
       interpolate_pixels( icon.style, 'height', s ),
       interpolate( icon.style, 'opacity', .75 + p/4 ),
-      interpolate_pixels( time.style, 'height', 10+Math.round(24*p) ),
+       interpolate_pixels( time.style, 'height', 10+Math.round(24*p) ),
       interpolate_pixels( time.style, 'fontSize', 9 + Math.round(11*p) ),
-      interpolate_pixels( time.style, 'lineHeight', 9 + Math.round(11*p) ),
+         interpolate_pixels( time.style, 'lineHeight', 9 + Math.round(11*p) ),
       interpolate( time.style, 'opacity', .75 + p/4 ),
       toggle_animation( time.style, 'fontWeight', .5, p?'bold':'normal', p?'normal':'bold' ),
       interpolate_pixels( text.style, 'height', 6 + Math.round(44*p) ),
@@ -207,17 +207,17 @@ and can be used to style the event and change the icon), and _message_ is the te
     if ( scrollBottom != 0 ) {
       var scrollBottomStart = scrollBottom;
       unscroll = timed_animations( new Date().getTime(), 1000, [
-          function(fraction) { scrollBottom = (1-fraction) * scrollBottomStart; }
-        ], INOUT_EASING );
+               function(fraction) { scrollBottom = (1-fraction) * scrollBottomStart; }
+            ], INOUT_EASING );
       needsUpdate();
-    }
+      }
     clear();
   }
 
   function needsUpdate() {
     if ( ! animationFrame ) {
       lastAnimationTime = new Date().getTime();
-      animationFrame = chat.os.requestAnimationFrame( 'events', 'main', animateEvents );
+         animationFrame = chat.os.requestAnimationFrame( 'events', 'main', animateEvents );
     }
   }
 
@@ -231,7 +231,7 @@ and can be used to style the event and change the icon), and _message_ is the te
       if ( scrollBottom > 0  ) { scrollBottom = 0; scrollVelocity = 0; }
     }
     if ( scrollVelocity != 0 ) {
-      needsNextFrame = true;
+         needsNextFrame = true;
       mousemove( {screenY:lastScreenY} );
     }
     
@@ -253,7 +253,7 @@ and can be used to style the event and change the icon), and _message_ is the te
 
     heightOffset = (el('events').offsetHeight - 100 - ITEM_HEIGHT * index) >> 1;
     if ( eventState['events-'+(index-1)].pop > 0 ) heightOffset = 0;
-    el('events').style.bottom = (scrollBottom - heightOffset) + 'px';
+     el('events').style.bottom = (scrollBottom - heightOffset) + 'px';
  
     if ( needsNextFrame ) {
       lastAnimationTime = time;
@@ -269,7 +269,7 @@ and can be used to style the event and change the icon), and _message_ is the te
   }
 
   document.getElementById('events').onmousemove = mousemove;
-  document.getElementById('events').onmouseout = mouseout;
+   document.getElementById('events').onmouseout = mouseout;
 
   // animation functions
   function splinef( x1, y1, x2, y2 ) {
@@ -287,7 +287,7 @@ and can be used to style the event and change the icon), and _message_ is the te
     var end = start + duration;
     return function( t ) {
       if ( t >= end ) {  for (var i=0,a; a=animations[i]; i++ ) a(1); return 1; }
-      var fraction = easing( (t-start)/duration );
+         var fraction = easing( (t-start)/duration );
       for (var i=0,a; a=animations[i]; i++ ) a( fraction );
       return fraction;
     }

@@ -1,14 +1,14 @@
 # background
 
 This upgrade creates the background command
-```
+<pre>
 :background style
-```
+</pre>
 where _style_ is the value of a css background property to be applied to the document's body elment. For example:
-```
+<pre>
 :background #fe3
 :background url('http://my_pics.example.com/something_dark_and_textured.png');
-```
+</pre>
 
 The background upgrade loads the last background command when it is install so the background should always stay
 synchronized.

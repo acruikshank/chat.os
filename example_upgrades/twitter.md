@@ -3,9 +3,9 @@
 Run a request to check twitter every 5 minutes for updates tweets and mentions for some number of twitter handlers.
 This upgrade requires the _events_ upgrade or something that provides a chat.os.event(date,type,text) function to
 display the results. It introduces the follow command:
-```
+<pre>
 :follow handle
-```
+</pre>
 where _handle_ is someone's twitter handle (minus the '@'). Executing the follow command will add the handle to the
 list of handles already being followed.
 
@@ -33,15 +33,15 @@ list of handles already being followed.
   }
 
   function gen( name, clss, atts ) {
-    var el = document.createElement(name), out={};
+      var el = document.createElement(name), out={};
     if ( typeof clss == 'object' ) atts=clss, clss=null;
-    for (var att in atts) el.setAttribute(att,atts[att]);
-    if ( clss ) el.setAttribute('class', clss);
-    out.add = function(node) { return el.appendChild( node.el ? node.el() : node ), out; };
-    out.text = function(txt) { return el.appendChild( document.createTextNode(txt) ), out };
-    out.el = function() { return el; };
-    return out;
-  }
+      for (var att in atts) el.setAttribute(att,atts[att]);
+      if ( clss ) el.setAttribute('class', clss);
+      out.add = function(node) { return el.appendChild( node.el ? node.el() : node ), out; };
+      out.text = function(txt) { return el.appendChild( document.createTextNode(txt) ), out };
+      out.el = function() { return el; };
+     return out;
+   }
 
   var twitterRequest;
   var latestTwitterId;
@@ -51,20 +51,20 @@ list of handles already being followed.
   chat.os.send( '', { type:'replay', oftype:'twitter-request', limit:1 } );
   chat.os.send( '', { type:'replay', oftype:'twitter-response', limit:1 } );
 
-  function twitterHandler( message, next ) {
+   function twitterHandler( message, next ) {
     if ( message.type == 'twitter-request' ) return twitterRequest == message, console.log('following', message.following);
     if ( message.type !== 'twitter-response' ) return next();
 
-    if ( message.error )
+      if ( message.error )
       return console.error( message.error )
 
-    var response = JSON.parse(message.body);
+      var response = JSON.parse(message.body);
     for ( var i=response.results.length-1, result; result = response.results[i]; i-- ) {
       if ( ! latestTwitterId || result.id > latestTwitterId ) {
         chat.os.event( new Date(result.created_at), 'twitter', '@'+result.from_user+': '+result.text );
       }
     }
-    latestTwitterId = response.max_id;
+      latestTwitterId = response.max_id;
   }
 
   function followHandler( ctx, next ) {
@@ -72,17 +72,17 @@ list of handles already being followed.
     
     if ( twitterRequest && ~twitterRequest.following.indexOf(ctx.message.text) ) return;
 
-    twitterRequest = twitterRequest || { type:'twitter-request', name:'twitter-request', following:[] }
+      twitterRequest = twitterRequest || { type:'twitter-request', name:'twitter-request', following:[] }
     twitterRequest.following.push(ctx.message.text);
     var query = encodeURIComponent(twitterRequest.following.map(function(f) {return '@'+f+' OR from:'+f;}).join(' OR '));
 
-    chat.os.send( '', { 
-        type:'request', 
-        name:'twitter-request', 
-        url: 'http://search.twitter.com/search.json?q='+query+'&rpp=100',
+     chat.os.send( '', { 
+            type:'request', 
+            name:'twitter-request', 
+            url: 'http://search.twitter.com/search.json?q='+query+'&rpp=100',
         responseType: 'twitter-response',
         responseName: 'twitter-response',
-        schedule:'23 */3 * * * *' } );
+            schedule:'23 */3 * * * *' } );
     chat.os.send( '', twitterRequest );
   }
 })()

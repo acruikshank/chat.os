@@ -168,15 +168,15 @@ be provided for the open event.
 
   function el(id) { return document.getElementById(id); }
   function gen( name, clss, atts ) {
-    var el = document.createElement(name), out={};
+      var el = document.createElement(name), out={};
     if ( typeof clss == 'object' ) atts=clss, clss=null;
-    for (var att in atts) el.setAttribute(att,atts[att]);
-    if ( clss ) el.setAttribute('class', clss);
-    out.add = function(node) { return el.appendChild( node.el ? node.el() : node ), out; };
-    out.text = function(txt) { return el.appendChild( document.createTextNode(txt) ), out };
-    out.el = function() { return el; };
-    return out;
-  }
+      for (var att in atts) el.setAttribute(att,atts[att]);
+      if ( clss ) el.setAttribute('class', clss);
+      out.add = function(node) { return el.appendChild( node.el ? node.el() : node ), out; };
+      out.text = function(txt) { return el.appendChild( document.createTextNode(txt) ), out };
+      out.el = function() { return el; };
+     return out;
+   }
 
   /*
    'open', el - dom element in which content may be placed. Id of element may be used to close pane.
@@ -185,26 +185,26 @@ be provided for the open event.
   chat.os.pane = function pane( id, title, eventResponder /* ( id, eventType, data ) */ ) {
     var pane, paneTitle, close, body;
     if ( ! panes[id] ) {
-      pane = gen('div','pane',{id:'panes-' + id})
-        .add( gen('div','pane-header')
-          .add( gen('span',{id:'pane-title-'+id}).text(title) )
-          .add( close = gen('button','close').text('\u24E7') ) )
-        .add( body = gen('div','pane-body',{id:'pane-body-'+id} ).el() )
+         pane = gen('div','pane',{id:'panes-' + id})
+            .add( gen('div','pane-header')
+               .add( gen('span',{id:'pane-title-'+id}).text(title) )
+           .add( close = gen('button','close').text('\u24E7') ) )
+            .add( body = gen('div','pane-body',{id:'pane-body-'+id} ).el() )
 
       close.el().onclick = function() { chat.os.send( '', { type:'close-pane', paneId:id } ); }
 
-      el('panes-content').appendChild(pane.el());
+       el('panes-content').appendChild(pane.el());
 
-      el('panes-menu').appendChild( gen('div', 'panes-toggle', { id: 'pane-toggle-'+id } ).el() );
+       el('panes-menu').appendChild( gen('div', 'panes-toggle', { id: 'pane-toggle-'+id } ).el() );
     } else {
       panes[id]( id, 'close' );
       body = el('pane-body-'+id);
-      body.innerHTML = '';
+         body.innerHTML = '';
       paneTitle = el('pane-title-'+id);
       paneTitle.innerHTML = '';
-      paneTitle.appendChild( document.createTextNode(title) );
+       paneTitle.appendChild( document.createTextNode(title) );
     }
-    panes[id] = eventResponder;
+      panes[id] = eventResponder;
     select( id );
     eventResponder( id, 'open', body );
   }
@@ -213,9 +213,9 @@ be provided for the open event.
     if ( ! panes[id] ) return;
     panes[id]( id, 'close' );
     var next, found = false; 
-    for ( var pane in panes ) {
+      for ( var pane in panes ) {
       if ( pane == id ) found = true;
-      else next = pane;
+         else next = pane;
       if ( found && next ) break;
     }
     var pane = el('panes-'+id), paneToggle = el('pane-toggle-'+id);
@@ -229,19 +229,19 @@ be provided for the open event.
   function select( selectedId ) {
     for (var id in panes) {
       if ( id == selectedId )
-        el('panes-content').style.left = (-el('panes-'+id).offsetLeft) + 'px';
-      el('pane-toggle-'+id).setAttribute( 'class', id==selectedId ? 'panes-toggle selected' : 'panes-toggle');
+         el('panes-content').style.left = (-el('panes-'+id).offsetLeft) + 'px';
+         el('pane-toggle-'+id).setAttribute( 'class', id==selectedId ? 'panes-toggle selected' : 'panes-toggle');
     }
   }
 
   var inputHandlers = { 
-    'select-pane' : function selectPaneIH(message) { select( message.paneId ); }, 
-    'close-pane': function closePaneIH(message) { chat.os.closePane( message.paneId ); } 
+      'select-pane' : function selectPaneIH(message) { select( message.paneId ); }, 
+      'close-pane': function closePaneIH(message) { chat.os.closePane( message.paneId ); } 
   }
 
   function selectOrClosePane( message, next ) {
-    if ( ! (message.type in inputHandlers) ) return next();
-    inputHandlers[message.type]( message );
+      if ( ! (message.type in inputHandlers) ) return next();
+     inputHandlers[message.type]( message );
   }
 
   chat.os.addInputHandler(selectOrClosePane, 1);

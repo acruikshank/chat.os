@@ -155,18 +155,18 @@ _gravatar_ plugin to display icons.
   }
 
   function gen( name, clss, atts ) {
-    var el = document.createElement(name), out={};
+      var el = document.createElement(name), out={};
     if ( typeof clss == 'object' ) atts=clss, clss=null;
-    for (var att in atts) el.setAttribute(att,atts[att]);
-    if ( clss ) el.setAttribute('class', clss);
-    out.add = function(node) { return el.appendChild( node.el ? node.el() : node ), out; };
-    out.text = function(txt) { return el.appendChild( document.createTextNode(txt) ), out };
-    out.el = function() { return el; };
-    return out;
-  }
+      for (var att in atts) el.setAttribute(att,atts[att]);
+      if ( clss ) el.setAttribute('class', clss);
+      out.add = function(node) { return el.appendChild( node.el ? node.el() : node ), out; };
+      out.text = function(txt) { return el.appendChild( document.createTextNode(txt) ), out };
+      out.el = function() { return el; };
+     return out;
+   }
 
   // text area sends message
-  select('#right-chat-input').onkeydown = function(e) { 
+   select('#right-chat-input').onkeydown = function(e) { 
     e=e||window.event; var code=e.keyCode||e.which; 
     if ( code == 13 ) {
       chat.os.send( select('#right-chat-input').value );
@@ -178,18 +178,18 @@ _gravatar_ plugin to display icons.
 
   chat.os.addInputHandler(renderComment, 9);
 
-  function renderComment( message, next ) {
+   function renderComment( message, next ) {
     var commentContainer = select('#right-chat-comments');
     if ( message.type !== 'comment' ) return next();
     var icon = gen('span','icon');
     if ( chat.os.gravatar && message.from.email )
-      icon.add( gen('img','img',{src:chat.os.gravatar(message.from.email)}) );
+         icon.add( gen('img','img',{src:chat.os.gravatar(message.from.email)}) );
     var comment = gen('div',{'class':'comment'})
         .add( icon ).add( gen('p', 'body').text(message.body) ).el();
     var atBottom = ( commentContainer.scrollHeight - commentContainer.offsetHeight - commentContainer.scrollTop < 30 );
     commentContainer.appendChild( comment );
     if ( atBottom ) 
-      commentContainer.scrollTop = commentContainer.scrollHeight - commentContainer.offsetHeight;
+         commentContainer.scrollTop = commentContainer.scrollHeight - commentContainer.offsetHeight;
   }
 
   chat.os.send( '', { type:'replay', oftype:'comment', limit:200 } );

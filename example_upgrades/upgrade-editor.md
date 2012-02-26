@@ -1,9 +1,9 @@
 # upgrade-editor
 
 The upgrade-editor upgrade introduces the edit-upgrade command:
-```
+<pre>
 :edit-upgrade name
-```
+</pre>
 where _name_ is the name of an upgrade to be edited or created. When called a simple
 edit UI is displayed only to the current user to simplify the task of creating upgrades.
 
@@ -167,35 +167,35 @@ edit UI is displayed only to the current user to simplify the task of creating u
     select('#upgrade-editor .script textarea').value = (upgrade && upgrade.script) || '';
   });
 
-  // section toggles
-  var sections = { markup:true, style:true, script:true };
-  select('#upgrade-editor .markup label').onclick = function() { sections.markup=!sections.markup; toggleSections(); };
-  select('#upgrade-editor .style label').onclick = function() { sections.style=!sections.style; toggleSections(); };
-  select('#upgrade-editor .script label').onclick = function() { sections.script=!sections.script; toggleSections(); };
-  function toggleSections() {
-    var open = (sections.markup?1:0) + (sections.style?1:0) + (sections.script?1:0);
-    var openWidth = open ? ((90 - (3-open)*3) / open) + '%' : '0%';
-    for ( var section in sections ) {
-      select('#upgrade-editor .'+section+' label').style.webkitTransform = (sections[section]?'rotate(0deg)':'rotate(-90deg)');
-      select('#upgrade-editor .'+section).style.width=(sections[section] ? openWidth : '3%');
-    }
-  }
+   // section toggles
+   var sections = { markup:true, style:true, script:true };
+   select('#upgrade-editor .markup label').onclick = function() { sections.markup=!sections.markup; toggleSections(); };
+   select('#upgrade-editor .style label').onclick = function() { sections.style=!sections.style; toggleSections(); };
+   select('#upgrade-editor .script label').onclick = function() { sections.script=!sections.script; toggleSections(); };
+   function toggleSections() {
+     var open = (sections.markup?1:0) + (sections.style?1:0) + (sections.script?1:0);
+     var openWidth = open ? ((90 - (3-open)*3) / open) + '%' : '0%';
+     for ( var section in sections ) {
+         select('#upgrade-editor .'+section+' label').style.webkitTransform = (sections[section]?'rotate(0deg)':'rotate(-90deg)');
+        select('#upgrade-editor .'+section).style.width=(sections[section] ? openWidth : '3%');
+      }
+   }
 
-  // handle tabs
-  function tabHandler(e) {
-    e=e||window.event; var code=e.keyCode||e.which, ta=e.target;
-    if ( code == 9 ) { // tabs
-      var ss=ta.selectionStart, se=ta.selectionEnd;
-      e.preventDefault();
-      ta.value = ta.value.slice(0,ss)+'  '+ta.value.slice(se,ta.value.length);
-      ta.selectionEnd = ss+2;
-    }
-  }
-  select('#upgrade-editor .markup textarea').onkeydown = 
-    select('#upgrade-editor .style textarea').onkeydown =
-    select('#upgrade-editor .script textarea').onkeydown = tabHandler;
+   // handle tabs
+   function tabHandler(e) {
+      e=e||window.event; var code=e.keyCode||e.which, ta=e.target;
+      if ( code == 9 ) { // tabs
+         var ss=ta.selectionStart, se=ta.selectionEnd;
+         e.preventDefault();
+         ta.value = ta.value.slice(0,ss)+'   '+ta.value.slice(se,ta.value.length);
+         ta.selectionEnd = ss+2;
+      }
+   }
+   select('#upgrade-editor .markup textarea').onkeydown =  
+      select('#upgrade-editor .style textarea').onkeydown =
+       select('#upgrade-editor .script textarea').onkeydown = tabHandler;
 
-  function close() {
+   function close() {
     select('#upgrade-editor').style.opacity = 0;
     setTimeout(function() { select('#upgrade-editor').style.display='none';}, 250);    
   }

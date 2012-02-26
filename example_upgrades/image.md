@@ -1,9 +1,9 @@
 # image
 
 Implements the _image_ command.
-```
+<pre>
 :image url
-```
+</pre>
 This upgrade requires the _panes_ upgrade. When a user enters the image command,
 all participants will open a new pane that contains the image.
 

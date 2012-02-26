@@ -120,10 +120,12 @@ replay all vote messages to display the curren tally after startup.
 The request message runs an http request from the server and stores and broadcasts the request name
 as a new message.
 <pre>
-:request {name:[name], url:[url], [request options], responseType:[type], responseName:[name], schedule:[schedule]}
+:request {name:[name], url:[url], [request options], responseType:[type], 
+          responseName:[name], schedule:[schedule]}
 </pre>
-_request options_ are all the options from Node.js request object including method, headers, etc. If a URL is
-specified, it will overwrite these parameter. responseType is the type of the response message and responseName is
-the name it will be saved under if you would like to avoid saving a new response everytime the request is made.
-The _schedule_ is a 6 option cron specification for when the request should be made. There's a bit more to it, but
-that's all I'm going to document for now.
+_request options_ are all the options from Node.js request object including method, headers, etc. 
+If a URL is specified, it will overwrite these parameters. responseType is the type of the
+response message and responseName is the name it will be saved under if you would like to avoid
+saving a new response everytime the request is made. The _schedule_ is a 6 option cron specification
+for when the request should be made. There's a bit more to it, but that's all I'm going to document
+for now.

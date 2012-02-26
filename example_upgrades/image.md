@@ -2,7 +2,7 @@
 
 ## Command
 ```
-:upgrade {"type":"upgrade","name":"image","markup":"","style":"","script":"(function() {\n  console.log('command-history v1.2')\n  function el(id) { return document.getElementById(id); }\n  function wrap(o,prop,f) { \n    var old = o[prop]; \n    o[prop] = (old ? function() { \n      return f.apply(this,arguments)!==false && old.apply(this,arguments); \n      } : f); \n  }\n\n  var history = [];\n  var index = 0;\n\n  var keyHandler = chat.os.replaceSafe( 'command-history-key-handler', function(e) { \n    e=e||window.event; var code=e.keyCode||e.which; \n    if ( code == 38 ) {  // up\n      if ( index > 0 )\n        el('message').value = history[--index];\n      return false;\n    } else if ( code == 40 ) { // down\n      if ( index < history.length )\n        el('message').value = history[++index]||'';\n      return false;\n    }\n    return true;\n  } );\n  if ( keyHandler ) \n    wrap( el('message'), 'onkeydown', keyHandler );\n\n  chat.os.addOutputHandler( function commandHistoryOutputHandler( ctx, next ) {\n    try {\n      if ( ctx.text ) history.push( ctx.text );\n      index = history.length;\n    } finally { next(); }\n  }, 0 );\n\n})();"}
+:upgrade {"type":"upgrade","name":"image","markup":"","style":".image-pane-body img {\n  display: block;\n  width: 80%;\n  margin: 10px auto;\n}","script":"(function() {\n  function hash(str) { \n    for (var i=0,h=0,l=str.length; i<l; i++) h = (((h<<5)-h)+str.charCodeAt(i))|0; \n    return Math.abs(h); \n  }\n\n  chat.os.addInputHandler( renderImage, 5 );\n  \n  function renderImage( message, next ) {\n    if ( message.type != 'image' ) return next();\n    return chat.os.pane( 'image-'+hash(message.text), message.text, render );\n    \n    function render( id, type, div ) {\n      if ( type != 'open' ) return;\n      console.log( arguments );\n      var img = document.createElement('img');\n      img.setAttribute('src', message.text);\n      div.setAttribute('class','image-pane-body');\n      div.appendChild( img );\n    }\n  }\n})();"}
 ```
 
 ## Markup
@@ -12,46 +12,35 @@
 
 ## Style
 ```css
-
+.image-pane-body img {
+  display: block;
+  width: 80%;
+  margin: 10px auto;
+}
 ```
 
 ## Script
 ```javascript
 (function() {
-  console.log('command-history v1.2')
-  function el(id) { return document.getElementById(id); }
-  function wrap(o,prop,f) { 
-    var old = o[prop]; 
-    o[prop] = (old ? function() { 
-      return f.apply(this,arguments)!==false && old.apply(this,arguments); 
-      } : f); 
+  function hash(str) { 
+    for (var i=0,h=0,l=str.length; i<l; i++) h = (((h<<5)-h)+str.charCodeAt(i))|0; 
+    return Math.abs(h); 
   }
 
-  var history = [];
-  var index = 0;
-
-  var keyHandler = chat.os.replaceSafe( 'command-history-key-handler', function(e) { 
-    e=e||window.event; var code=e.keyCode||e.which; 
-    if ( code == 38 ) {  // up
-      if ( index > 0 )
-        el('message').value = history[--index];
-      return false;
-    } else if ( code == 40 ) { // down
-      if ( index < history.length )
-        el('message').value = history[++index]||'';
-      return false;
+  chat.os.addInputHandler( renderImage, 5 );
+  
+  function renderImage( message, next ) {
+    if ( message.type != 'image' ) return next();
+    return chat.os.pane( 'image-'+hash(message.text), message.text, render );
+    
+    function render( id, type, div ) {
+      if ( type != 'open' ) return;
+      console.log( arguments );
+      var img = document.createElement('img');
+      img.setAttribute('src', message.text);
+      div.setAttribute('class','image-pane-body');
+      div.appendChild( img );
     }
-    return true;
-  } );
-  if ( keyHandler ) 
-    wrap( el('message'), 'onkeydown', keyHandler );
-
-  chat.os.addOutputHandler( function commandHistoryOutputHandler( ctx, next ) {
-    try {
-      if ( ctx.text ) history.push( ctx.text );
-      index = history.length;
-    } finally { next(); }
-  }, 0 );
-
+  }
 })();
 ```

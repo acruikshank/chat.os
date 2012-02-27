@@ -140,7 +140,7 @@ for reference.
 There a few functions in the chat.os namespace make upgrade programming possible, and a few more
 are available to keep the environment sane when upgrades are reloaded.
 
-# send
+### send
 
 ```javascript
 chat.os.send( text, message )
@@ -151,7 +151,7 @@ input. If _text_ is specified, the text will be added as the 'text' field of the
 body of a comment if no message is provided. The contents of message may be explicitly specified
 by passing an object as the message parameter.
 
-# addInputHandler
+### addInputHandler
 
 ```javascript
 chat.os.addInputHandler( handler, priority )
@@ -179,7 +179,7 @@ the later the handler will be called, so you should specify a low number (say < 
 that act on the message but don't handle it, and a high number (say 5 > n >= 10) for handlers
 that handle the message (i.e. that do not call `next`). The default priority is 5.
 
-# addOutputHandler
+### addOutputHandler
 
 ```javascript
 chat.os.addOutputHandler( handler, priority )
@@ -203,7 +203,7 @@ at priority 1 that will convert text parameters in the form `:[type] [text]` or 
 into a new message object. In the first case the message will be `{type:[type], text:[text]}`
 and in the second case, the message will simply be the JSON object with its type set to `[type]`.
 
-# replaceSafe
+### replaceSafe
 
 ```javascript
 var safeHandler = chat.os.replaceSafe( name, f )
@@ -226,7 +226,7 @@ before and the wrapper function is still listening for the event. The wrapper wi
 the new function to process the event. If replaceSafe returns null, the upgrade should 
 continue without binding anything to the event.
 
-# timing methods
+### timing methods
 
 ```javascript
 chat.os.setInterval( upgrade, name, f, ms )

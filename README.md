@@ -129,3 +129,120 @@ response message and responseName is the name it will be saved under if you woul
 saving a new response everytime the request is made. The _schedule_ is a 6 option cron specification
 for when the request should be made. There's a bit more to it, but that's all I'm going to document
 for now.
+
+## Writing Upgrades
+
+The chat.os server provides very little functionality out-of-the-box. The goal is to build up rich
+interfaces by incrementally adding upgrades that deliver the missing functionality. Several
+upgrades have been document in [/example_upgrades](/acruikshank/chat.os/example_upgrades) for
+reference.
+
+There a few functions in the chat.os namespace make upgrade programming possible, and a few more
+are available to keep the environment sane when upgrades are reloaded.
+
+# send
+
+```javascript
+chat.os.send( text, message )
+```
+
+This method lets an upgrade send a message to the server as if it were submitted from the message
+input. If _text_ is specified, the text will be added as the 'text' field of the context and the
+body of a comment if no message is provided. The message may be explicitly specified by passing it 
+as the message parameter. The message must have a 'type' property.
+
+# addInputHandler
+
+```javascript
+chat.os.addInputHandler( handler, priority )
+
+function handler( message, next ) {
+  if ( message.type != 'my-type' )
+    return next();
+
+  // do something with message and possibly call next()
+}
+```
+
+An input handler receives a message coming from the server to the client and either modifies it
+or handles it. All messages are passed through each input handler, and the handler decides if
+it should act or not. Message processing will go through each input handler sequentially, and
+continue only if the handler calls the provided `next` function. If the handler should not act on 
+the message, it should call the `next` function and exit immediately. If the handler modifies or
+reads a message it expects to be handled elsewhere, it should always call the `next` function.
+
+The _priority_ parameter is optional and provides some order to the input chain even though
+multiple handlers may act on a message without being aware of each other. The higher the number
+the later the handler will be called, so you should specify a low number (< 5) for handlers
+that act on the message but don't handle it, and a high number (say 5 > n >= 10) for handlers
+that handle the message (ie. that do not call `next`). The default priority is 5.
+
+# addOutputHandler
+
+```javascript
+chat.os.addOutputHandler( handler, priority )
+
+function handler( context, next ) {
+  if ( ! context.message || ! context.message.type != 'my-type' )
+    return next();
+
+  // do something with message and possibly call next()
+}
+```
+Output handlers process messages before they leave the client for the server. They may be
+used to alter the message, or they may be used to implement new commands that only affect
+the current instance of the room. Like input handlers, output handlers must call `next`
+if the message is the wrong type or the handler wants it to continue on to the server.
+The _priority_ parameter also works as it does for input handlers.
+
+The context object contains a 'text' and a 'message' property that correspond to the
+parameters supplied to the `send` function. At startup, an outputHandler will be added
+at priority 1 that will convert text parameters in the form `:[type] [text]` or `:[type] [JSON]`
+into a new message object. In the first case the message will be `{type:[type], text:[text]}`
+and in the second case, the message will simply be the JSON object with its type set to `[type]`.
+
+# replaceSafe
+
+```javascript
+var safeHandlerOrNull = chat.os.replaceSafe( name, f )
+```
+
+The replaceSafe function can be used to create event handlers that can be attached to the
+global DOM (the DOM outside that owned by the upgrade) and yet be easily replace when the
+upgrade is reloaded. This is necessary because strategies for permitting multiple upgrades
+listen to the same event do not make it easy to unload the event handler without having
+access to the instance of the function.
+
+To use this function, pass in a name that uniquely identifies this handler (the name should
+be prepended with the upgrade name) and the handler. If replaceSafe has not seen the name
+before, it will return a wrapper function that behaves just like f. The upgrade should use
+this function as the eventHandler. If the replaceSafe function has already
+been called with this name it will return null. This indicates the function has been called
+before and the wrapper function is still listening for the event, only it will now use the
+new function to process it. In this case, the upgrade should skip adding the wrapper to
+the dom.
+
+# timing methods
+
+```javascript
+chat.os.setInterval( upgrade, name, f, ms )
+chat.os.setTimeout( upgrade, name, f, ms )
+chat.os.requestAnimationFrame( upgrade, name, f )
+```
+
+These methods work just like their native counterparts. The only advantage to calling these
+is that the chat.os bootstrap code will be sure to clear all timing functions associated
+with an upgrade before the upgrade is replaced. The _upgrade_ parameter must be the name
+of the upgrade, and the _name_ parameter distinguishes functions within an upgrade.
+
+### properties 
+
+```javascript
+chat.os.identity = {};
+chat.os.room = 'name';
+chat.os.upgrades = {};
+```
+
+The current user's identity (an object containing nickname, email, etc.), the name of the room, and a
+object containing all upgrades keyed by name are made availble for all upgrades to use.
+

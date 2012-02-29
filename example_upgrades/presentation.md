@@ -14,7 +14,7 @@ supplied with an object in the following format:
     }
   ]
 }
-   
+```
 
 This upgrade requires the _panes_ upgrade.
 

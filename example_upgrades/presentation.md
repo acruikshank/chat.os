@@ -1,7 +1,7 @@
 # presentation
 Introduces the `:present {}` command that creates a presentation when
 supplied with an object in the following format:
-```json
+```javascript
 {
   "slides": [
     {

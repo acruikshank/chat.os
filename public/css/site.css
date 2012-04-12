@@ -1,2 +1,21 @@
 .logo { width: 10%; display: inline-block; padding: 0; }
 .circle-t { font-size: .66em; padding: 0 .18em; }
+
+#login .main-logo { 
+  margin-top: .75em;
+  text-align: center;
+  font-size:6em; 
+}
+#login a.google {
+  margin: 4em auto 0;
+  width: 230px;
+  background: transparent url('/images/google_login.png') 0 0 no-repeat;
+  background-size: 24px;
+  height: 24px;
+  display: block;
+  padding-left: 35px;
+  line-height: 24px;
+  font-family: Georgia, Times;
+  font-style: italic;
+  font-size: 16px;
+}

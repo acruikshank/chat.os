@@ -21,13 +21,13 @@ npm install
 
 Chat.os relies on Google accounts for authentication (more options coming soon). To create an
 instance of the server, you must create a google project using the
-[https://code.google.com/apis/console/b/0/|project console]. Next copy the config_example.js file
-in the root of the project to config.js and edit it. Choose randomish string for the session secret
+[project console](https://code.google.com/apis/console/b/0/). Next copy the config_example.js file
+in the root of the project to config.js and edit it. Choose a randomish string for the session secret
 and set authentication parameters provided from the google project console. Once the configuration
 is in place, you're ready to run the server:
 
 <pre>
-  node server.js
+node server.js
 </pre>
 
 ## Running Tests

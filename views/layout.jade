@@ -1,22 +1,20 @@
 !!! 5
 html
   head
-    link(rel='stylesheet',href='/css/bootstrap.min.css', type='text/css')
     link(rel='stylesheet',href='/css/site.css', type='text/css')
     title= locals.title || 'Nodebro.js'
     block scripts
   body
-    block nav
-      .topbar-wrapper
-        .topbar
-          .topbar-inner
-            .container
-              .brand nodebro.js
-              ul.secondary-nav
-                - if (locals.nickname)
-                  li
-                    a(href="/logout") logout
+    h1#logo cha
+      span#logo-t t
+      | os
+    canvas#logo-anim(width="160", height="160")
+    canvas#logo-cache(width="160", height="160")
+
 
     .container
       block content
+
+foot
+  script(src='/scripts/logo.js')
 

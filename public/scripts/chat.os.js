@@ -63,15 +63,13 @@
 
   function startSocket( reconnecting ) {
     var started = new Date().getTime();
-    var WebSocket = window.WebSocket || window.MozWebSocket;
-    ws = new WebSocket('ws://' + location.host);
-    ws.onopen = function() {
-      ws.send( JSON.stringify({type:reconnecting?'reconnect':'identify', identity:chat.os.identity, room:chat.os.room}) );    
-    }
-    ws.onmessage = function(m) {
-      callChain( inputHandlers, null, JSON.parse(m.data) ); 
-    }
-    ws.onclose = function() { startSocket(true) }
+    ws = io.connect();
+    ws.on('connect', function() {
+      ws.send(JSON.stringify({type:reconnecting?'reconnect':'identify', identity:chat.os.identity, room:chat.os.room}) );
+    });
+    ws.on('data', function(m) {
+      callChain( inputHandlers, null, m ); 
+    });
   }
 
   function upgrade( message, next ) {
@@ -149,7 +147,7 @@
   chat.os.send = function send( text, message ) {
     var context = { text:text||'', message: message || {type:'comment', body:text} };
     callChain( outputHandlers, sendMessage, context );
-    function sendMessage(context) { ws.send( JSON.stringify( context.message ) ); }
+    function sendMessage(context) { ws.emit( 'message', JSON.stringify(context.message) ); }
   }
 
   chat.os.addInputHandler = function addInputHandler(handler, priority) {

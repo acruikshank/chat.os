@@ -1,16 +1,16 @@
+var config = require('./config');
 var express = require('express');
-var WebSocketServer = require('ws').Server;
 var sessions = require( "cookie-sessions" );
 var app = express.createServer();
-var wss = new WebSocketServer({server:app, protocolVersion: 8});
-var chat = require('./lib/chat').manage( wss);
+var io = require('socket.io').listen(app, {log:false});
+var chat = require('./lib/chat').manage(io.sockets);
 var db = require('./lib/db');
 var rooms = require('./lib/rooms');
-var config = require('./config');
 var http = require('http');
 var Shred = new require('shred');
 var shred = new Shred();
 var querystring = require('querystring');
+
 
 /*
  * Authentication
@@ -113,7 +113,7 @@ app.get('/google_login', function(req,res) {
   return res.redirect( 'https://accounts.google.com/o/oauth2/auth?'+params)
 });
 
-app.listen( 8500 );
+app.listen( config.port );
 
 function authenticate( req, res, next ) {
   if ( ! req.session || ! req.session.email ) {
@@ -130,5 +130,25 @@ function with_room( req, res, next ) {
 
     req.room = room;
     next();
+  }
+}
+
+var events = require('events')
+
+function bind(o,prop) { return function() { o[prop].apply(o, Array.prototype.slice.call(arguments,0) )}; }
+
+module.exports.MockServer = function() { 
+  var sockets = [];
+  var emitter = new events.EventEmitter();
+
+  return {
+    connect : function() {
+      var socket = MockSocket();
+      sockets.push( socket );
+      emitter.emit('connection', socket);
+      return socket;
+    },
+    on : bind(emitter,'on'),
+    emit : bind(emitter,'emit')   
   }
 }

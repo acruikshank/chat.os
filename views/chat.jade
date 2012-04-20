@@ -5,6 +5,7 @@ html
       window.chat.os = window.chat['os']||{};
       window.chat.os.identity = {email:"#{ identity.email }", nickname:"#{identity.nickname}"};
       window.chat.os.room = '#{room.name}';
+    script(language="javascript",src="/socket.io/socket.io.js")
     style
       body { font-family: Helvetica; background: #000; color: #fff; padding:0; overflow:hidden; width:100%; }
       #logo { width: 10%; display: inline-block; padding: 0; text-align: center; }

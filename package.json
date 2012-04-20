@@ -3,7 +3,7 @@
   "version" : "0.0.1",
   "dependencies" : {
     "express" : "2.5",
-    "ws"      : "0",
+    "socket.io"      : "0.9",
     "cookie-sessions" : "0",
     "jade"    : "0.18",
     "mocha"   : "1",

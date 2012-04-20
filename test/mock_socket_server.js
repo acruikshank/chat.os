@@ -27,7 +27,7 @@ function MockSocket() {
 	for ( var p in emitter ) out[p] = bind(emitter,p);
 
 	// add 'send' to capture all messages sent to client
-  out.send = function(data) { sent.push(JSON.parse(data)); }
+	emitter.on('data', function(data) { sent.push(data);});
   out.message = function(data) { this.emit('message', JSON.stringify(data)); }
 
 	return out;

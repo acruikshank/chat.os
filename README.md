@@ -40,10 +40,6 @@ mocha spec/*
 
 ## Using
 
-Due to a questionable choice websocket packages, chat.os only works with browsers that conform to 
-the most recent draft of the WebSocket spec (I think this is Chrome and FireFox and not Safari).
-Future work might switch this to socket.io to open it to other browsers.
-
 To begin, go to http://[host]:8500/ and enter your email and nickname. On the next page, choose
 an existing room or create a new one. Once it a room, you will be chatting with everyone else
 currently in that room. If the room is new, there will only be a single text field at the top of

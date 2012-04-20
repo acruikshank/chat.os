@@ -29,6 +29,7 @@ function MockSocket() {
 	// add 'send' to capture all messages sent to client
 	emitter.on('data', function(data) { sent.push(data);});
   out.message = function(data) { this.emit('message', JSON.stringify(data)); }
+  out.disconnect = function() { this.emit('disconnect'); }
 
 	return out;
 }

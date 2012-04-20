@@ -138,7 +138,13 @@
   }
 
   function display(message) {
-    var text = message.type == 'comment' ? message.body : JSON.stringify(message);
+    var text;
+    if (message.type == 'comment')
+      text = message.body;
+    else if (message.type in {joined:1,disconnected:1})
+      text = message.from.email + ' ' + message.type;
+    else
+      text = JSON.stringify(message);
     var response = document.createElement('P');
     response.appendChild( document.createTextNode(text) );
     el('responses').appendChild(response);

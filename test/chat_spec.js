@@ -10,7 +10,8 @@ var expect = require('expect.js');
 var requestResponder = function(o) { return JSON.stringify(o); }
 require('../lib/requests').for_testing( function(o) { return requestResponder(o); } );
 
-function last(a) { return a[a.length-1]; }
+function ofType(a, type) { return a.filter(function(m) { return m.type==type; }) }
+function last(a, type) { var f=(type ? ofType(a,type) : a); return f[f.length-1]; }
 
 describe('Chat', function(){
   var socketA, socketB, socketC, socketD, socketE, onHandled, server;
@@ -93,31 +94,47 @@ describe('Chat', function(){
 
   describe('after identifying', function() {
     beforeEach(function(done) {
+      // noop needed because identify calls handled when it sends the 'joined' message and when it's sent the upgrades.
+      function noop() {}  
       sequenceHandled(
         function ida() { 
           socketA.message({type:'identify', identity:{email:'a@example.com', nickname:'A'}, room:'main' });
-        }, function idb() {
+        }, noop, function idb() {
           socketB.message({type:'identify', identity:{email:'b@example.com', nickname:'B'}, room:'main' });
-        }, function idc() {
+        }, noop, function idc() {
           socketC.message({type:'identify', identity:{email:'c@example.com', nickname:'C'}, room:'main' });
-        }, function idd() {
+        }, noop, function idd() {
           socketD.message({type:'identify', identity:{email:'d@example.com', nickname:'D'}, room:'other' });
-        }, function ide() {
+        }, noop, function ide() {
           socketE.message({type:'identify', identity:{email:'e@example.com', nickname:'E'}, room:'other' });
-        }, done );        
+        }, noop, done );        
+    })
+
+    it("sends a 'joined' message to the room", function() {
+      expect( last(socketA.sent, 'joined' ) ).to.be.ok();
+      expect( last(socketA.sent, 'joined' ).from.email ).to.match( /c\@example\.com/ );
+
+      expect( last(socketB.sent, 'joined' ) ).to.be.ok();
+      expect( last(socketB.sent, 'joined' ).from.email ).to.match( /c\@example\.com/ );
+
+      expect( last(socketC.sent, 'joined' ) ).to.be.ok();
+      expect( last(socketC.sent, 'joined' ).from.email ).to.match( /c\@example\.com/ );
+
+      expect( last(socketD.sent, 'joined' ) ).to.be.ok();
+      expect( last(socketD.sent, 'joined' ).from.email ).to.match( /e\@example\.com/ );
     })
 
     it('sends existing upgrades for room', function() {
-      expect( last(socketA.sent).type ).to.be( 'upgrade' );
-      expect( last(socketA.sent).script ).to.match( /console.*"testing"/ );
+      expect( last(socketA.sent, 'upgrade' ) ).to.be.ok();
+      expect( last(socketA.sent, 'upgrade').script ).to.match( /console.*"testing"/ );
 
-      expect( last(socketB.sent).type ).to.be( 'upgrade' );
-      expect( last(socketB.sent).script ).to.match( /console.*"testing"/ );
+      expect( last(socketB.sent, 'upgrade' ) ).to.be.ok();
+      expect( last(socketB.sent, 'upgrade').script ).to.match( /console.*"testing"/ );
 
-      expect( last(socketC.sent).type ).to.be( 'upgrade' );
-      expect( last(socketC.sent).script ).to.match( /console.*"testing"/ );
+      expect( last(socketC.sent, 'upgrade' ) ).to.be.ok();
+      expect( last(socketC.sent, 'upgrade').script ).to.match( /console.*"testing"/ );
 
-      expect( socketD.sent ).to.be.empty();
+      expect( last(socketD.sent, 'upgrade') ).to.be(undefined);
     })
     
     describe('when reconnecting', function() {
@@ -126,8 +143,22 @@ describe('Chat', function(){
         socketA.message({type:'reconnect', identity:{email:'a@example.com', nickname:'A'}, room:'main'});
       })
 
+      it("sends a 'joined' message to the room", function() {
+        expect( last(socketA.sent, 'joined' ) ).to.be.ok();
+        expect( last(socketA.sent, 'joined' ).from.email ).to.match( /a\@example\.com/ );
+
+        expect( last(socketB.sent, 'joined' ) ).to.be.ok();
+        expect( last(socketB.sent, 'joined' ).from.email ).to.match( /a\@example\.com/ );
+
+        expect( last(socketC.sent, 'joined' ) ).to.be.ok();
+        expect( last(socketC.sent, 'joined' ).from.email ).to.match( /a\@example\.com/ );
+
+        expect( last(socketD.sent, 'joined' ) ).to.be.ok();
+        expect( last(socketD.sent, 'joined' ).from.email ).to.match( /e\@example\.com/ );
+      })
+
       it('does not send existing upgrades', function() {
-        expect(socketA.sent.length).to.be( 1 );
+        expect( ofType(socketA.sent,'upgrade').length ).to.be( 1 );
       })
     })
 
@@ -149,7 +180,7 @@ describe('Chat', function(){
       })
 
       it('does not echo message outside of room', function() {
-        expect( socketD.sent ).to.be.empty();
+        expect( last(socketD.sent,'comment') ).to.be(undefined);
       })
 
       it('adds a from to the message', function() {
@@ -182,15 +213,15 @@ describe('Chat', function(){
       });
 
       it ('sends the requested messages from the correct room in the correct order to the user', function() {
-        expect( socketA.sent.length ).to.be(4);
-        expect( socketA.sent[1].body ).to.match(/modern comment/);
-        expect( socketA.sent[2].body ).to.match(/as an upgrade/);
-        expect( socketA.sent[3].body ).to.match(/as another upgrade/);
+        expect( ofType(socketA.sent,'comment').length ).to.be(3);
+        expect( ofType(socketA.sent,'comment')[0].body ).to.match(/modern comment/);
+        expect( ofType(socketA.sent,'comment')[1].body ).to.match(/as an upgrade/);
+        expect( ofType(socketA.sent,'comment')[2].body ).to.match(/as another upgrade/);
       });
 
       it ('does not send the messages to other users', function() {
-        expect( socketB.sent.length ).to.be(1);
-        expect( socketC.sent.length ).to.be(1);
+        expect( ofType(socketB.sent,'comment') ).to.be.empty();
+        expect( ofType(socketC.sent,'comment') ).to.be.empty();
       });
     })
 
@@ -201,16 +232,16 @@ describe('Chat', function(){
       });
 
       it ('sends the requested messages from the correct room in the correct order to the user', function() {
-        expect( socketA.sent.length ).to.be(5);
-        expect( socketA.sent[1].body ).to.match(/early message 2/);
-        expect( socketA.sent[2].body ).to.match(/modern comment/);
-        expect( socketA.sent[3].body ).to.match(/as an upgrade/);
-        expect( socketA.sent[4].body ).to.match(/as another upgrade/);
+        expect( ofType(socketA.sent,'comment').length ).to.be(4);
+        expect( ofType(socketA.sent,'comment')[0].body ).to.match(/early message 2/);
+        expect( ofType(socketA.sent,'comment')[1].body ).to.match(/modern comment/);
+        expect( ofType(socketA.sent,'comment')[2].body ).to.match(/as an upgrade/);
+        expect( ofType(socketA.sent,'comment')[3].body ).to.match(/as another upgrade/);
       });
 
       it ('does not send the messages to other users', function() {
-        expect( socketB.sent.length ).to.be(1);
-        expect( socketC.sent.length ).to.be(1);
+        expect( ofType(socketB.sent,'comment') ).to.be.empty();
+        expect( ofType(socketC.sent,'comment') ).to.be.empty();
       });
     })
 
@@ -396,6 +427,25 @@ describe('Chat', function(){
         }
       })
     })
+
+    describe('and then disconnecting', function() {
+      beforeEach(function(done) {
+        onHandled = done;
+        socketA.disconnect();
+      });
+
+      it ('broadcasts a disconnect message to rest of room', function() {
+        expect( last(socketA.sent, 'disconnected' ) ).to.be(undefined);
+
+        expect( last(socketB.sent, 'disconnected' ) ).to.be.ok();
+        expect( last(socketB.sent, 'disconnected' ).from.email ).to.match( /a\@example\.com/ );
+
+        expect( last(socketC.sent, 'disconnected' ) ).to.be.ok();
+        expect( last(socketC.sent, 'disconnected' ).from.email ).to.match( /a\@example\.com/ );
+
+        expect( last(socketD.sent, 'disconnected' ) ).to.be(undefined);
+      });
+    });
   })
 
 })

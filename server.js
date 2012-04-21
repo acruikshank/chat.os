@@ -83,7 +83,7 @@ app.get('/google_oauth2_callback', function( req, res ) {
         grant_type: 'authorization_code' }),
       on : {
         200: token_response,
-        response: function(r) { console.log.apply(console, ['AUTH FAILURE',r.content.data].concat(arguments) ); } } })
+        response: function(r) { console.log.apply(console, ['TOKEN AUTH FAILURE',r.content.data].concat(arguments) ); } } })
 
     function token_response( response ) {
       shred.get({
@@ -91,7 +91,7 @@ app.get('/google_oauth2_callback', function( req, res ) {
         query: { access_token: response.content.data.access_token },
         on : {
           200: profile_response,
-          response: function(r) { console.log.apply(console, ['AUTH FAILURE',r.content.data].concat(arguments) ); } } })
+          response: function(r) { console.log.apply(console, ['ACCOUNT AUTH FAILURE',r.content.data].concat(arguments) ); } } })
     }
 
     function profile_response( response ) {
@@ -107,6 +107,7 @@ app.get('/google_login', function(req,res) {
   params = [['response_type','code'],
     ['client_id',config.google_client_id],
     ['redirect_uri', config.google_redirect_uri],
+    ['approval_prompt','force'],
     ['scope', 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'],
     ['state',(req.session||{}).preauth_destination || '/' ]]
     .map( function(a) { return a.map(encodeURIComponent).join('=') }).join('&');

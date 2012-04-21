@@ -23,7 +23,7 @@ Chat.os relies on Google accounts for authentication (more options coming soon).
 instance of the server, you must create a google project using the
 [project console](https://code.google.com/apis/console/b/0/). Next copy the config_example.js file
 in the root of the project to config.js and edit it. Choose a randomish string for the session secret
-and set authentication parameters provided from the google project console. Once the configuration
+and set the authentication parameters provided from the google project console. Once the configuration
 is in place, you're ready to run the server:
 
 <pre>
@@ -35,20 +35,22 @@ node server.js
 Chat.os uses mocha.js to test server side functionality. To run the tests:
 
 <pre>
-mocha spec/*
+mocha
 </pre>
 
 ## Using
 
-To begin, go to http://[host]:8500/ and enter your email and nickname. On the next page, choose
-an existing room or create a new one. Once it a room, you will be chatting with everyone else
+To begin, go to the home page on the server (i.e. http://localhost:8500/), click the link to
+log in through google accounts, and follow the instructions from there. Once you've been
+authenticated and authorized the application, you will land on the rooms page where you can create
+an existing room or create a new one. Once in a room, you will be chatting with everyone else
 currently in that room. If the room is new, there will only be a single text field at the top of
 page where you can enter comments and commands.
 
 ### Syntax
 
-Typing anything into the input will create a comment that will be broadcast to others on the page.
-You may enter commands by prepending the first word by a colon like:
+Typing anything into the input will create a comment that will be broadcast to others in the room.
+You may enter commands by prepending the first word with a colon like:
 <pre>
 :move into the red room
 </pre>
@@ -71,8 +73,8 @@ script into the room. It's syntax is:
 :upgrade { name:[name], markup:[html], style:[css], script:[js] }
 </pre>
 Where name is the name of the upgrade, markup is the HTML to inject, style is the CSS to inject, and 
-script is the JavaScript to inject. All three of these should be string escaped.  When the upgrade
-is added to the page the application will to its best to replace and existing upgrade with the same
+script is the Javascript to inject. All three of these should be string escaped.  When the upgrade
+is added to the page the application will do its best to replace and existing upgrade with the same
 name. 
 
 If the top level elements in the markup have an id, any existing elements matching that id will be
@@ -82,9 +84,9 @@ It's good practice to prepend the name of the upgrade to every id in the markup.
 Any CSS for a previous upgrade with the same name will be replaced by the new upgrade. Thats true for
 the JS as well, but special care needs to be taken to avoid global effects that can't be undone.
 
-Upgrades are tied to a room. All uploads for a room will be added whenever anyone enters a room.
-Saveing an upgrade will replace an existing upgrade with the same name and broadcast the new 
-version (there is currently no versioning).
+Upgrades are tied to a room. All upgrades to a room will be added whenever anyone enters the room.
+Saving an upgrade will replace an existing upgrade with the same name and then broadcast the new 
+version (there is currently no concept of versioning).
 
 ### Import
 
@@ -116,12 +118,24 @@ Force a page refresh for all room participants
 The replay command searches the current room for messages previously sent to the room and resends
 them only to the current user (i.e. the messages are not broadcast).
 <pre>
-:replay { type:[type], since:[time], limit:[count] }
+:replay { oftype:[type], since:[time], limit:[count] }
 </pre>
 All of the search criteria are optional. 
 
 Replay messages are useful to initialize upgrades after startup. For example, a poll upgrade may
 replay all vote messages to display the curren tally after startup.
+
+### Rollcall
+
+The rollcall command requests a list of all the room participants with active connections. A
+rollcall response will be sent that contains the identities of all people in the room.
+<pre>
+:rollcall {}
+</pre>
+responds with:
+<pre>
+{type:'rollcall', participants:[...]}
+</pre>
 
 ### Request
 

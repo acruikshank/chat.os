@@ -12,27 +12,20 @@ require('../lib/requests').for_testing( function(o) { return requestResponder(o)
 
 function ofType(a, type) { return a.filter(function(m) { return m.type==type; }) }
 function last(a, type) { var f=(type ? ofType(a,type) : a); return f[f.length-1]; }
+function waitToBeCalled(times) {
+  var count = 0;
+  return { timesThenCall: function(f) { 
+    return function() { if (++count == times) f(); } 
+  } }
+}
 
 describe('Chat', function(){
   var socketA, socketB, socketC, socketD, socketE, onHandled, server;
 
-  function sequenceHandled() {
-    var functions = Array.prototype.slice.call(arguments,0), 
-        index=0;
-    function next() {
-      if ( ! functions[index+1] ) return functions[index]();
-      onHandled = next;
-      functions[index++]();
-    }
-    next();
-  }
-
   before( function() {
     chat.events.addListener('handled', function(err) {
       if ( err ) throw err;
-      var action = onHandled;
-      onHandled = null;
-      if ( action ) action();
+      if ( onHandled ) onHandled();
     })
     server = sockets.MockServer();
     chat.manage(server);
@@ -49,14 +42,14 @@ describe('Chat', function(){
     function addMessages() {
       var time = new Date().getTime();
       var fixture = [ 
-                      {type:'comment',room:'main',body:'early message', timestamp:time-100000},
-                      {type:'comment',room:'main',body:'early message 2', timestamp:time-80000},
-                      {type:'comment',room:'main',body:'do not load me as an upgrade', timestamp:time-20000},
-                      {type:'upgrade', room:'main', name:'upgrade1', script:'console.log("testing");', timestamp:time-15000},
-                      {type:'comment',room:'main',body:'do not load me as another upgrade', timestamp:time-10000},
-                      {type:'comment',room:'other',body:'comment in other room', timestamp:time-5000},
-                      {type:'comment',room:'main',body:'modern comment', timestamp:time-30000},
-                    ];
+          {type:'comment',room:'main',body:'early message', timestamp:time-100000},
+          {type:'comment',room:'main',body:'early message 2', timestamp:time-80000},
+          {type:'comment',room:'main',body:'do not load me as an upgrade', timestamp:time-20000},
+          {type:'upgrade', room:'main', name:'upgrade1', script:'console.log("testing");', timestamp:time-15000},
+          {type:'comment',room:'main',body:'do not load me as another upgrade', timestamp:time-10000},
+          {type:'comment',room:'other',body:'comment in other room', timestamp:time-5000},
+          {type:'comment',room:'main',body:'modern comment', timestamp:time-30000},
+        ];
       (function upgradeFixtures() {
         messages.save( fixture.splice(0,1)[0], fixture.length ? upgradeFixtures : addRooms );
       })();
@@ -94,21 +87,25 @@ describe('Chat', function(){
 
   describe('after identifying', function() {
     beforeEach(function(done) {
-      // noop needed because identify calls handled when it sends the 'joined' message and when it's sent the upgrades.
-      function noop() {}  
-      sequenceHandled(
-        function ida() { 
-          socketA.message({type:'identify', identity:{email:'a@example.com', nickname:'A'}, room:'main' });
-        }, noop, function idb() {
-          socketB.message({type:'identify', identity:{email:'b@example.com', nickname:'B'}, room:'main' });
-        }, noop, function idc() {
-          socketC.message({type:'identify', identity:{email:'c@example.com', nickname:'C'}, room:'main' });
-        }, noop, function idd() {
-          socketD.message({type:'identify', identity:{email:'d@example.com', nickname:'D'}, room:'other' });
-        }, noop, function ide() {
-          socketE.message({type:'identify', identity:{email:'e@example.com', nickname:'E'}, room:'other' });
-        }, noop, done );        
+      // expect to have handled called twice for each connection
+      onHandled = waitToBeCalled( 10 ).timesThenCall( done )
+
+      socketA.message({type:'identify', identity:{email:'a@example.com', nickname:'A'}, room:'main' });
+      socketB.message({type:'identify', identity:{email:'b@example.com', nickname:'B'}, room:'main' });
+      socketC.message({type:'identify', identity:{email:'c@example.com', nickname:'C'}, room:'main' });
+      socketD.message({type:'identify', identity:{email:'d@example.com', nickname:'D'}, room:'other' });
+      socketE.message({type:'identify', identity:{email:'e@example.com', nickname:'E'}, room:'other' });
     })
+
+    afterEach( function( done ) {
+      onHandled = waitToBeCalled( 5 ).timesThenCall( done )
+      
+      socketA.disconnect();
+      socketB.disconnect();
+      socketC.disconnect();
+      socketD.disconnect();
+      socketE.disconnect();
+    } )
 
     it("sends a 'joined' message to the room", function() {
       expect( last(socketA.sent, 'joined' ) ).to.be.ok();
@@ -139,7 +136,8 @@ describe('Chat', function(){
     
     describe('when reconnecting', function() {
       beforeEach(function(done) {
-        onHandled = done;
+        onHandled = waitToBeCalled( 2 ).timesThenCall( done )  
+        socketA.disconnect();
         socketA.message({type:'reconnect', identity:{email:'a@example.com', nickname:'A'}, room:'main'});
       })
 
@@ -245,6 +243,28 @@ describe('Chat', function(){
       });
     })
 
+    describe('and sending a rollcall message', function() {
+      beforeEach(function(done) {
+        onHandled = done;
+        socketA.message({type:'rollcall'});
+      })
+
+      it ('sends a response only to the sender', function() {
+        expect( ofType(socketA.sent,'rollcall').length ).to.be(1);
+        expect( ofType(socketB.sent,'rollcall') ).to.be.empty();
+        expect( ofType(socketD.sent,'rollcall') ).to.be.empty();
+      })
+
+      it ('sends a the identity of all current participants in the room', function() {
+        var participants = ofType(socketA.sent,'rollcall')[0].participants;
+        participants.withEmail = function(e) { return this.filter(function(p) { return p.email == e;}); }
+        expect( participants.length ).to.be(3);
+        expect( participants.withEmail('a@example.com').length ).to.be(1);
+        expect( participants.withEmail('b@example.com').length ).to.be(1);
+        expect( participants.withEmail('b@example.com').length ).to.be(1);
+      })
+    })
+
     describe('and sending a request message', function() {
       beforeEach(function(done) {
         onHandled = done;
@@ -305,6 +325,7 @@ describe('Chat', function(){
 
       describe('then when scheduled message is fired', function() {
         beforeEach(function() {
+          onHandled = null;
           scheduler.simulate_scheduled({type:'comment', room:'main', body:'Happy New Year', name:'new-years2', schedule:'0 0 0 0 0 0'});
         });
 

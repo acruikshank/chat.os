@@ -13,7 +13,7 @@ to stop following the previous repo.
 
 ## Command
 ```
-:upgrade {"type":"upgrade","name":"github","markup":"","style":"#events .github .icon {\n  background: #fff url(http://dl.dropbox.com/u/49528799/Octocat.png) 50% 50%;\n  background-size: 30px 30px;\n}","script":"(function() {\n  var githubRequest;\n  var lastCommitTime;\n\n  chat.os.addInputHandler(githubHandler, 9);\n  chat.os.addOutputHandler(githubFollowHandler);\n  chat.os.send( '', { type:'replay', oftype:'github-response', limit:1 } );\n  chat.os.send( '', { type:'replay', oftype:'github-request', limit:1 } );\n\n  function githubHandler( message, next ) {\n    if ( message.type == 'github-request' ) return githubRequest = message, console.log('github following',githubRequest);\n    if ( message.type !== 'github-response' ) return next();\n\n    if ( message.error )\n      return console.error( message.error )\n\n    var response = JSON.parse(message.body), time;\n    for ( var i=response.length-1, result; result = response[i]; i-- ) {\n      time = new Date(result.commit.committer.date);\n      if ( ! lastCommitTime || time.getTime() > lastCommitTime.getTime() ) {\n        chat.os.event( time, 'github', '@'+result.committer.login+': '+result.commit.message.substring(0,140) );\n        lastCommitTime = time;\n      }\n    }\n  }\n\n  function githubFollowHandler( ctx, next ) {\n    if ( ! ctx.message || ctx.message.type != 'github-follow' ) return next();\n\n    if ( githubRequest && githubRequest.following == ctx.message.text ) return;\n\n    githubRequest = githubRequest || { type:'github-request', name:'github-request' }\n    githubRequest.following = ctx.message.text;\n    chat.os.send( '', { \n        type:'request', \n        name:'github-request', \n        url: 'https://api.github.com/repos/'+ctx.message.text+'/commits?per_page=100',\n        responseType: 'github-response',\n        responseName: 'github-response',\n        schedule:'23 */3 * * * *' } );\n    chat.os.send( '', githubRequest );\n  }\n})()"}
+:upgrade {"type":"upgrade","name":"github","markup":"","style":"#events .github .icon {\n  background: #fff url(http://dl.dropbox.com/u/49528799/Octocat.png) 50% 50%;\n  background-size: 30px 30px;\n}","script":"(function() {\n  var githubRequest;\n  var lastCommitTime;\n  var flash = false;\n\n  chat.os.addInputHandler(githubHandler, 9);\n  chat.os.addOutputHandler(githubFollowHandler);\n  chat.os.send( '', { type:'replay', oftype:'github-response', limit:1 } );\n  chat.os.send( '', { type:'replay', oftype:'github-request', limit:1 } );\n\n  function githubHandler( message, next ) {\n    if ( message.type == 'github-request' ) return githubRequest = message, console.log('github following',githubRequest);\n    if ( message.type !== 'github-response' ) return next();\n\n    if ( message.error )\n      return console.error( message.error )\n\n    var response = JSON.parse(message.body), time;\n    var newCommits = [];\n    for ( var i=response.length-1, result; result = response[i]; i-- ) {\n      time = new Date(result.commit.committer.date);\n      if ( ! lastCommitTime || time.getTime() > lastCommitTime.getTime() ) {\n        newCommits.push( [result,time] );\n        lastCommitTime = time;\n      }\n    }\n    for ( var i=0, result; result = newCommits[i]; i++ )\n      chat.os.event( result[1], 'github', \n          '@'+result[0].committer.login+': '+result[0].commit.message.substring(0,140),\n          newCommits.length < 5 );\n  }\n\n  function githubFollowHandler( ctx, next ) {\n    if ( ! ctx.message || ctx.message.type != 'github-follow' ) return next();\n\n    if ( githubRequest && githubRequest.following == ctx.message.text ) return;\n\n    githubRequest = githubRequest || { type:'github-request', name:'github-request' }\n    githubRequest.following = ctx.message.text;\n    chat.os.send( '', { \n        type:'request', \n        name:'github-request', \n        url: 'https://api.github.com/repos/'+ctx.message.text+'/commits?per_page=100',\n        responseType: 'github-response',\n        responseName: 'github-response',\n        schedule:'23 */3 * * * *' } );\n    chat.os.send( '', githubRequest );\n  }\n})()"}
 ```
 
 ## Style
@@ -29,6 +29,7 @@ to stop following the previous repo.
 (function() {
   var githubRequest;
   var lastCommitTime;
+  var flash = false;
 
   chat.os.addInputHandler(githubHandler, 9);
   chat.os.addOutputHandler(githubFollowHandler);
@@ -43,13 +44,18 @@ to stop following the previous repo.
       return console.error( message.error )
 
     var response = JSON.parse(message.body), time;
+    var newCommits = [];
     for ( var i=response.length-1, result; result = response[i]; i-- ) {
       time = new Date(result.commit.committer.date);
       if ( ! lastCommitTime || time.getTime() > lastCommitTime.getTime() ) {
-        chat.os.event( time, 'github', '@'+result.committer.login+': '+result.commit.message.substring(0,140) );
+        newCommits.push( [result,time] );
         lastCommitTime = time;
       }
     }
+    for ( var i=0, result; result = newCommits[i]; i++ )
+      chat.os.event( result[1], 'github', 
+          '@'+result[0].committer.login+': '+result[0].commit.message.substring(0,140),
+          newCommits.length < 5 );
   }
 
   function githubFollowHandler( ctx, next ) {

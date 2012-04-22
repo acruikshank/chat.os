@@ -68,7 +68,7 @@
       ws.send(JSON.stringify({type:reconnecting?'reconnect':'identify', identity:chat.os.identity, room:chat.os.room}) );
     });
     ws.on('data', function(m) {
-      callChain( inputHandlers, null, m ); 
+      callChain( inputHandlers, display, m ); 
     });
   }
 
@@ -150,7 +150,30 @@
     el('responses').appendChild(response);
   }
 
+  function sanityTestInputHandler( handler, success ) {
+    var timeout = setTimeout( timeoutError, 500 );
+    return handler( {type:'sanity-test'}, next );
+
+    function next() { clearTimeout(timeout); success(); }
+    function timeoutError() {
+      console.error( handler.toString() );
+      throw new Error("TIMEOUT sanity checking input handler: " + handler.name);
+    }
+  }
+
+  function sanityTestOutputHandler( handler, success ) {
+    var timeout = setTimeout( timeoutError, 500 );
+    return handler( { text:'sanity', message:{type:'sanity-test'} }, next );
+
+    function next() { clearTimeout(timeout); success(); }
+    function timeoutError() {
+      console.error( handler.toString() );
+      throw new Error("TIMEOUT sanity checking output handler: " + handler.name);
+    }
+  }
+
   chat.os.send = function send( text, message ) {
+    if ( typeof text == 'object' ) message = text, text = '';
     var context = { text:text||'', message: message || {type:'comment', body:text} };
     callChain( outputHandlers, sendMessage, context );
     function sendMessage(context) { ws.emit( 'message', JSON.stringify(context.message) ); }
@@ -158,14 +181,22 @@
 
   chat.os.addInputHandler = function addInputHandler(handler, priority) {
     handler.priority = priority == null ? 5 : priority;
-    inputHandlers = inputHandlers.filter(function(ih) { return !ih.name || ih.name != handler.name; }).concat([handler]);
-    inputHandlers.sort(function(a,b) { return a.priority - b.priority;});
+    return sanityTestInputHandler( handler, addHandler );
+
+    function addHandler() {
+      inputHandlers = inputHandlers.filter(function(ih) { return !ih.name || ih.name != handler.name; }).concat([handler]);
+      inputHandlers.sort(function(a,b) { return a.priority - b.priority; });
+    }
   }
 
   chat.os.addOutputHandler = function addOutputHandler(handler, priority) {
     handler.priority = priority == null ? 5 : priority;
-    outputHandlers = outputHandlers.filter(function(oh) { return !oh.name || oh.name != handler.name; }).concat([handler]);
-    outputHandlers.sort(function(a,b) { return a.priority - b.priority;});
+    return sanityTestOutputHandler( handler, addHandler );
+
+    function addHandler() {
+      outputHandlers = outputHandlers.filter(function(oh) { return !oh.name || oh.name != handler.name; }).concat([handler]);
+      outputHandlers.sort(function(a,b) { return a.priority - b.priority;});
+    }
   }
 
   chat.os.replaceSafe = function replaceSafe( name, f ) {
@@ -199,7 +230,6 @@
 
   chat.os.addInputHandler(reset,1);
   chat.os.addInputHandler(upgrade);
-  chat.os.addInputHandler(display,10);
 
   chat.os.addOutputHandler(onaction,1);
 })();

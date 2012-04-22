@@ -3,7 +3,7 @@ html
     script(language="javascript")
       window.chat = window['chat']||{};
       window.chat.os = window.chat['os']||{};
-      window.chat.os.identity = {email:"#{ identity.email }", nickname:"#{identity.nickname}"};
+      window.chat.os.identity = {email:"#{ identity.email }", name:"#{identity.name||''}", picture:"#{identity.picture||''}"};
       window.chat.os.room = '#{room.name}';
     script(language="javascript",src="/socket.io/socket.io.js")
     style

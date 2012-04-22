@@ -65,7 +65,7 @@ app.post('/rooms/new', authenticate, function( req, res, next ) {
 });
 
 app.get('/rooms/:room', authenticate, with_room, function( req, res, next ) {
-  res.render('chat', {identity:{email:req.session.email, nickname:req.session.nickname}, room:req.room });
+  res.render('chat', {identity:{email:req.session.email, name:req.session.name, picture:req.session.picture}, room:req.room });
 });
 
 app.get('/google_oauth2_callback', function( req, res ) {
@@ -96,8 +96,10 @@ app.get('/google_oauth2_callback', function( req, res ) {
 
     function profile_response( response ) {
       req.session = req.session || {};
-      for ( var item in response.content.data )
-        req.session[item] = response.content.data[item];
+
+      req.session.name = response.content.data.name;
+      req.session.email = response.content.data.email;
+      req.session.picture = response.content.data.picture;
       res.redirect( next_uri );
     }
   }

@@ -32,11 +32,11 @@ describe('Chat', function(){
   })
 
 	beforeEach( function(done) {
-    socketA = server.connect();
-    socketB = server.connect();
-    socketC = server.connect();
-    socketD = server.connect();
-    socketE = server.connect();
+    socketA = server.connect({email:'a@example.com', nickname:'A'});
+    socketB = server.connect({email:'b@example.com', nickname:'B'});
+    socketC = server.connect({email:'c@example.com', nickname:'C'});
+    socketD = server.connect({email:'d@example.com', nickname:'D'});
+    socketE = server.connect({email:'e@example.com', nickname:'E'});
 
     return db.clean(addMessages, 'rooms', 'messages');
     function addMessages() {
@@ -90,11 +90,11 @@ describe('Chat', function(){
       // expect to have handled called twice for each connection
       onHandled = waitToBeCalled( 10 ).timesThenCall( done )
 
-      socketA.message({type:'identify', identity:{email:'a@example.com', nickname:'A'}, room:'main' });
-      socketB.message({type:'identify', identity:{email:'b@example.com', nickname:'B'}, room:'main' });
-      socketC.message({type:'identify', identity:{email:'c@example.com', nickname:'C'}, room:'main' });
-      socketD.message({type:'identify', identity:{email:'d@example.com', nickname:'D'}, room:'other' });
-      socketE.message({type:'identify', identity:{email:'e@example.com', nickname:'E'}, room:'other' });
+      socketA.message({type:'identify', room:'main' });
+      socketB.message({type:'identify', room:'main' });
+      socketC.message({type:'identify', room:'main' });
+      socketD.message({type:'identify', room:'other' });
+      socketE.message({type:'identify', room:'other' });
     })
 
     afterEach( function( done ) {

@@ -2,7 +2,8 @@
   "name" : "chat.os",
   "version" : "0.0.1",
   "dependencies" : {
-    "express" : "2.5",
+    "connect" : "2",
+    "express" : "2",
     "socket.io"      : "0.9",
     "cookie-sessions" : "git://github.com/caolan/cookie-sessions.git#master",
     "jade"    : "0.18",

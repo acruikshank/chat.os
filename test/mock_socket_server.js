@@ -7,8 +7,9 @@ module.exports.MockServer = function() {
 	var emitter = new events.EventEmitter();
 
 	return {
-		connect : function() {
+		connect : function( identity ) {
 			var socket = MockSocket();
+			socket.handshake = { identity:identity };
 			sockets.push( socket );
 			emitter.emit('connection', socket);
 			return socket;

@@ -10,6 +10,7 @@ var http = require('http');
 var Shred = new require('shred');
 var shred = new Shred();
 var querystring = require('querystring');
+var utils = require('connect').utils;
 
 
 /*
@@ -23,11 +24,27 @@ var querystring = require('querystring');
 
 app.configure(function(){
   app.use(express.errorHandler({ showStack: true, dumpExceptions: true }));
-  app.use( sessions( { secret:config.session_secret, session_key : '_chatos' } ) );
+  app.use( sessions( { secret:config.session_secret, session_key : '_chatos', timeout: 24*3600000 } ) );
   app.set('view engine','jade');
   app.set('view options',{layout:false});
   app.use( express.bodyParser() );
   app.use(express.static(__dirname+'/public'));
+});
+
+// tie socket authentication and identity to session
+io.set('authorization', function( handshake, callback ) {
+  if ( ! handshake.headers.cookie )
+    return callback('Not logged in', false);
+  
+  var cookies = utils.parseCookie(handshake.headers.cookie);
+  if ( ! cookies['_chatos'] )
+    return callback('Not logged in', false);
+
+  handshake.identity = sessions.deserialize( config.session_secret, 24*3600000, cookies['_chatos'])
+  if ( ! handshake.identity || ! handshake.identity.email )
+    return callback('Not logged in', false);
+
+  return callback( null, true );
 });
 
 app.post('/login', function( req, res ) {

@@ -65,11 +65,12 @@
     var started = new Date().getTime();
     ws = io.connect();
     ws.on('connect', function() {
-      ws.send(JSON.stringify({type:reconnecting?'reconnect':'identify', identity:chat.os.identity, room:chat.os.room}) );
+      ws.send(JSON.stringify({type:reconnecting?'reconnect':'identify', room:chat.os.room}) );
     });
     ws.on('data', function(m) {
       callChain( inputHandlers, display, m ); 
     });
+    ws.on('error', function(e) { console.error(e); })
   }
 
   function upgrade( message, next ) {

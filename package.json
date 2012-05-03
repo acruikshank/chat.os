@@ -4,7 +4,7 @@
   "dependencies" : {
     "express" : "2.5",
     "socket.io"      : "0.9",
-    "cookie-sessions" : "0",
+    "cookie-sessions" : "git://github.com/caolan/cookie-sessions.git#master",
     "jade"    : "0.18",
     "mocha"   : "1",
     "mongodb" : "0",

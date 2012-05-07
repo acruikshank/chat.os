@@ -204,6 +204,29 @@ describe('Chat', function(){
       })
     })
 
+    describe('when sending a transient message', function() {
+      beforeEach( function(done) {
+        onHandled = done;
+        socketA.message({type:'typing-start', persist:false})
+      })
+
+      it('echoes the message to all participants', function() {
+        expect( last(socketA.sent).type ).to.be( 'typing-start' );
+        expect( last(socketB.sent).type ).to.be( 'typing-start' );
+        expect( last(socketC.sent).type ).to.be( 'typing-start' );
+      })
+
+      it('does NOT save the message', function(done) {
+        return messages.find({room:'main', type:'typing-start'}, withResults);
+        function withResults( err, results ) {
+          if ( err ) throw err;
+          expect( last(results,'typing-start') ).to.be(undefined);
+          done();
+        }
+
+      })
+    })
+
     describe('and sending a replay message', function() {
       beforeEach(function(done) {
         onHandled = done;

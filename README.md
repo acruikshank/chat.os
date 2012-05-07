@@ -173,6 +173,10 @@ input. If _text_ is specified, the text will be added as the 'text' field of the
 body of a comment if no message is provided. The contents of message may be explicitly specified
 by passing an object as the message parameter.
 
+All messags will be saved to the room by default. If you would like to broadcast a message to the
+room that should not be saved (say, information about what a user is doing right now or individual
+game events), add `persist:false` to the message.
+
 ### addInputHandler
 
 ```javascript

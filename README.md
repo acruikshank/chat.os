@@ -120,10 +120,10 @@ them only to the current user (i.e. the messages are not broadcast).
 <pre>
 :replay { oftype:[type], since:[time], limit:[count] }
 </pre>
-All of the search criteria are optional. 
+All of the search criteria are optional. Type may be a single string or an array of types.
 
 Replay messages are useful to initialize upgrades after startup. For example, a poll upgrade may
-replay all vote messages to display the curren tally after startup.
+replay all vote messages to display the current tally after startup.
 
 ### Rollcall
 

@@ -49,6 +49,7 @@ describe('Chat', function(){
           {type:'comment',room:'main',body:'do not load me as another upgrade', timestamp:time-10000},
           {type:'comment',room:'other',body:'comment in other room', timestamp:time-5000},
           {type:'comment',room:'main',body:'modern comment', timestamp:time-30000},
+          {type:'non-comment',room:'main',body:'not a comment', timestamp:time-29500},
         ];
       (function upgradeFixtures() {
         messages.save( fixture.splice(0,1)[0], fixture.length ? upgradeFixtures : addRooms );
@@ -258,6 +259,27 @@ describe('Chat', function(){
         expect( ofType(socketA.sent,'comment')[1].body ).to.match(/modern comment/);
         expect( ofType(socketA.sent,'comment')[2].body ).to.match(/as an upgrade/);
         expect( ofType(socketA.sent,'comment')[3].body ).to.match(/as another upgrade/);
+      });
+
+      it ('does not send the messages to other users', function() {
+        expect( ofType(socketB.sent,'comment') ).to.be.empty();
+        expect( ofType(socketC.sent,'comment') ).to.be.empty();
+      });
+    })
+
+    describe('and sending a replay message with multiple types', function() {
+      beforeEach(function(done) {
+        onHandled = done;
+        socketA.message({type:'replay', oftype:['comment','non-comment'], limit:5});
+      });
+
+      it ('sends the requested messages from the correct room in the correct order to the user', function() {
+        expect( ofType(socketA.sent,'comment').length ).to.be(4);
+        expect( ofType(socketA.sent,'comment')[0].body ).to.match(/early message 2/);
+        expect( ofType(socketA.sent,'comment')[1].body ).to.match(/modern comment/);
+        expect( ofType(socketA.sent,'comment')[2].body ).to.match(/as an upgrade/);
+        expect( ofType(socketA.sent,'comment')[3].body ).to.match(/as another upgrade/);
+        expect( ofType(socketA.sent,'non-comment').length ).to.be(1);
       });
 
       it ('does not send the messages to other users', function() {

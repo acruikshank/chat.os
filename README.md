@@ -148,9 +148,37 @@ as a new message.
 _request options_ are all the options from Node.js request object including method, headers, etc. 
 If a URL is specified, it will overwrite these parameters. responseType is the type of the
 response message and responseName is the name it will be saved under if you would like to avoid
-saving a new response everytime the request is made. The _schedule_ is a 6 option cron specification
-for when the request should be made. There's a bit more to it, but that's all I'm going to document
-for now.
+saving a new response everytime the request is made. 
+
+### Scheduled Messages
+
+Chat.os provides a scheduling mechanism to act on messages at a regular interval. Normally this means
+the message will be repeatedly re-broadcast to its room, but request messages will be resent and the
+response will be sent to the room (allowing periodic queries to another server). The _schedule_ is a 
+6 option cron specification for when the request should be made. See 
+[node-cron](https://github.com/ncb000gt/node-cron) for details on the cron syntax.
+
+Properties within scheduled messages can be replaced with the time the message is processed or a time
+before or after the current date. Any string found within the message that contains a pattern like
+```
+%d{format}
+%d{format--yy-mm-ddTHH:MM:ss}
+%d{format++yy-mm-ddTHH:MM:ss}
+```
+will be substituted with the current time altered by the time string. The format can be any valid
+format string according to [date-time-format](http://blog.stevenlevithan.com/archives/date-time-format)
+and the expression following the format specifies the years, months, days, hours, minutes and seconds
+to add or subtract from the current time. Some examples:
+```
+'The time is now %d{h:MM tt} on %d{mmmm d, yyyy}' -> 'The time is now 9:34 am on June 16, 2012'
+'%d{yyyy-mm-dd HH:MM:ss}' -> '2012-06-16 09:34:14'
+'%d{yyyy-mm-dd HH:MM:ss--1-0-0T0:0:0}' -> '2011-06-16 09:34:14'
+'%d{yyyy-mm-dd HH:MM:ss--0-1-0T0:0:0}' -> '2012-05-16 09:34:14'
+'%d{yyyy-mm-dd HH:MM:ss--0-0-1T21:34:14}' -> '2012-06-14 12:00:00'
+'%d{yyyy-mm-dd HH:MM:ss++0-0-1T2:25:46}' -> '2012-06-17 12:00:00'
+'%d{yyyy-mm-dd HH:MM:ss++0-2-0T0:0:0}' -> '2012-08-16 09:34:14'
+'%d{yyyy-mm-dd HH:MM:ss++5-0-0T0:0:0}' -> '2017-06-16 09:34:14'
+```
 
 ## Writing Upgrades
 

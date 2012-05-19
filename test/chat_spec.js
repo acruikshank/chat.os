@@ -313,7 +313,7 @@ describe('Chat', function(){
     describe('and sending a request message', function() {
       beforeEach(function(done) {
         onHandled = done;
-        requestResponder = function() { return "Test Request Response"; }
+        requestResponder = function(o) { return "Test Request Response"; }
         socketA.message({type:'request',url:'http://somewhere.nonexistant', responseType:'requestTest'});
       })
 
@@ -346,7 +346,6 @@ describe('Chat', function(){
     describe('and sending a scheduled message', function() {
       beforeEach(function(done) {
         onHandled = done;
-        requestResponder = function() { return "Test Request Response"; }
         socketA.message({type:'comment', body:'Happy New Year', name:'new-years', schedule:'0 0 0 0 0 0'});
       })
 
@@ -384,6 +383,35 @@ describe('Chat', function(){
       })
     })
 
+    describe('and sending a scheduled message with date substitutions', function() {
+      beforeEach(function() {
+        onHandled = null;
+        scheduler.simulate_scheduled({type:'comment', room:'main', 
+          body:'The time is now %d{h:MM tt} on %d{mmmm d, yyyy}',
+          fixtures : { 
+            last_year : '%d{yyyy-mm-dd HH:MM:ss--1-0-0T0:0:0}', 
+            last_month : '%d{yyyy-mm-dd HH:MM:ss--0-1-0T0:0:0}',
+            noon_2_days_ago : '%d{yyyy-mm-dd HH:MM:ss--0-0-1T21:34:14}', 
+            noon_tomorrow : '%d{yyyy-mm-dd HH:MM:ss++0-0-1T2:25:46}',
+            two_months_later : '%d{yyyy-mm-dd HH:MM:ss++0-2-0T0:0:0}',
+            five_years_later : '%d{yyyy-mm-dd HH:MM:ss++5-0-0T0:0:0}' },
+          name:'time-announce', schedule:'0 0 0 0 0 0'}, new Date(2012,5,16,9,34,14));
+      })
+
+      it ('broadcasts scheduled messsage with date inserted', function() {
+        expect( last(socketA.sent).body ).to.be( 'The time is now 9:34 am on June 16, 2012' );
+      })
+
+      it ('broadcasts scheduled messsage with altered dates inserted', function() {
+        expect( last(socketA.sent).fixtures.last_year ).to.be( '2011-06-16 09:34:14' );
+        expect( last(socketA.sent).fixtures.last_month ).to.be( '2012-05-16 09:34:14' );
+        expect( last(socketA.sent).fixtures.noon_2_days_ago ).to.be( '2012-06-14 12:00:00' );
+        expect( last(socketA.sent).fixtures.noon_tomorrow ).to.be( '2012-06-17 12:00:00' );
+        expect( last(socketA.sent).fixtures.two_months_later ).to.be( '2012-08-16 09:34:14' );
+        expect( last(socketA.sent).fixtures.five_years_later ).to.be( '2017-06-16 09:34:14' );
+      })
+
+    })
 
     describe('and sending an upgrade message', function() {
       beforeEach(function(done) {
